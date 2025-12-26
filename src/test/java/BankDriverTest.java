@@ -1,18 +1,28 @@
-package com.feyza.main;
-import com.feyza.utils.Bank;
+//package feyza;
+import dao.UsersDaoImp;
+import models.User;
+import utils.Bank;
 import java.sql.*;
-import com.feyza.dao.*;
-import com.feyza.models.*;
-import com.feyza.utils.Connect;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import utils.Connect;
+//import static org.junit.jupiter.api.Assertions.assertEquals;
+//import static org.junit.jupiter.api.Assertions.assertTrue;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+//import org.junit.jupiter.api.Test;
 /**
  * Unit test for app.
  */
 public class BankDriverTest 
 {
+  private Connection connect = Connect.getConnection();
     @Test
     public void testAssertEquals() {
       assertEquals(1,1);
@@ -46,7 +56,7 @@ public class BankDriverTest
         con.setAutoCommit(false);
         Statement stmt = con.createStatement(); 
         stmt.executeUpdate(sql);
-        User user = uDao.getUser(con, "newuser"); 
+        User user = uDao.getUser(con, "newuser");
         assertEquals(user.getUsername(), "newuser");
         assertEquals(user.getPassword(), "123");
         assertEquals(user.getFirstname(), "first");
