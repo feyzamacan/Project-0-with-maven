@@ -1,12 +1,16 @@
 package utils;
 
+import dao.ActionsDaoImp;
 import dao.UsersDaoImp;
+import models.Action;
 import models.User;
+
 
 import java.util.*;
 import java.sql.*;
 
 public class Bank {
+
 
   public static final String CREATE_USR = "Username: ";
   public static final String CREATE_P = "Password: ";
@@ -176,6 +180,8 @@ public class Bank {
     System.out.println("1. First time login");
     System.out.println("2. Login");
     System.out.println("3. Exit");
+    System.out.println("4. Admin: Print User Actions Log");
+
   }
 
   public static void showLoggedinMenu() {
@@ -184,7 +190,53 @@ public class Bank {
     System.out.println("3. View");
     System.out.println("4. Logout");
   }
+  // ---------- ADMIN LOG ----------
+
+  private static final ActionsDaoImp actionDao = new ActionsDaoImp();
+
+  public static void printAllUserActions() {
+    try (Connection con = Connect.getConnection()) {
+      List<models.Action> actions = actionDao.getAllActions(con);
+      System.out.println("=== User Actions Log ===");
+      for (models.Action action : actions) {
+        if(action.getAmount()==0){
+          System.out.printf(
+                  "UserID: %d | Username: %s | ActionID: %d | Type: %s",
+                  action.getUserId(),
+                  action.getUsername(),
+                  action.getActionId(),
+                  action.getDescription()
+                  //action.getAmount()
+                  //action.getTimestamp()
+
+          );
+        }
+        else{
+          System.out.printf(
+                  "UserID: %d | Username: %s | ActionID: %d | Type: %s | Amount: %.2f",
+                  action.getUserId(),
+                  action.getUsername(),
+                  action.getActionId(),
+                  action.getDescription(),
+                  action.getAmount()
+                  //action.getTimestamp()
+
+          );
+        }
+
+        System.out.println();
+
+      }
+    } catch (SQLException e) {
+      System.out.println("Failed to retrieve user actions.");
+      e.printStackTrace();
+    }
+  }
+
+
 }
+
+
 
 
 
@@ -214,11 +266,11 @@ public class Bank {
   public static final String CREATE_LASTNAME = "Last name: ";
   public static final int STARTING_BALANCE = 0;
   public static final String USR_TAKEN = "username taken";
-  public static final String READ_USERNAME = "Username: "; 
+  public static final String READ_USERNAME = "Username: ";
   public static final String READ_P = "Password: ";
   public static final String DEPOSIT_AMT = "enter deposit amount: ";
   public static final String WITHDRAW_AMT = "enter withdrawal amount: ";
-  public static final String DELIMIT = " "; 
+  public static final String DELIMIT = " ";
   public static final String BALANCE = "balance";
   public static final String BAD_LOGIN = "Wrong username or password";
   public static final String E_DEPOSIT = "Something went wrong";
@@ -248,10 +300,10 @@ public class Bank {
   public static User login(Connection con, String username, String password) throws SQLException {
     User user = uDao.getUser(con, username);
     if(user != null && (password.equals(user.getPassword()))) {
-      return user; 
+      return user;
     }
     return null;
-  } 
+  }
 
   public static boolean usernameTaken(Connection con, String username) throws SQLException {
     User user = uDao.getUser(con, username);
@@ -268,9 +320,9 @@ public class Bank {
     char[] password = new char[50];
     String firstname = null;
     String lastname = null;
-    UsersDaoImp uDao = new UsersDaoImp(); 
+    UsersDaoImp uDao = new UsersDaoImp();
     User user = new User();
-     
+
     try {
       Connection con = Connect.getConnection();
       do {
@@ -287,7 +339,7 @@ public class Bank {
       user.setLastname(lastname);
       user.setBalance(STARTING_BALANCE);
       uDao.insertUser(con, user);
-      
+
     }
     catch(SQLException e) {
      //log.error(e);
@@ -296,7 +348,7 @@ public class Bank {
   }
   //views balance of current user
   public static void view(Connection con, User user) {
-    UsersDaoImp uDao = new UsersDaoImp(); 
+    UsersDaoImp uDao = new UsersDaoImp();
     try {
       user = uDao.getUser(con, user.getUsername());
       System.out.println(String.format("Current Balance: %.2f", user.getBalance()));
@@ -332,7 +384,7 @@ public class Bank {
     while(sc.hasNext())
     {
       try {
-        if(sc.next().contains(target)) 
+        if(sc.next().contains(target))
         {
           return sc;
         }
@@ -347,7 +399,7 @@ public class Bank {
   public static int getSelection() {
     Console c = System.console();
     String selection = c.readLine();
-    Integer selectionInt = null; 
+    Integer selectionInt = null;
     try {
       selectionInt = Integer.parseInt(selection);  //getting input
     }
@@ -364,15 +416,15 @@ public class Bank {
     Float amt = null;
     do {
       try {
-      
+
         input = c.readLine(WITHDRAW_AMT);
         if(input.equalsIgnoreCase("b")) {
           return; //go back to menu
         }
         amt = Float.parseFloat(input);
       }
-      catch(NumberFormatException e) { 
-        amt = null; 
+      catch(NumberFormatException e) {
+        amt = null;
       }
     }
     while(!validAmount(amt));
@@ -388,7 +440,7 @@ public class Bank {
     UsersDaoImp uDao = new UsersDaoImp();
     Console c = System.console();
     String input = null;
-    Float amt = null; 
+    Float amt = null;
     do {
       try {
         input = c.readLine(WITHDRAW_AMT);
@@ -397,16 +449,16 @@ public class Bank {
         }
         amt = Float.parseFloat(input);
       }
-      catch(NumberFormatException e) { 
-        amt = null; 
+      catch(NumberFormatException e) {
+        amt = null;
       }
     }
     while(!validAmount(amt));
     try {
-      uDao.updateUser(con, user, (-1)*amt); 
+      uDao.updateUser(con, user, (-1)*amt);
     }
     catch(SQLException e) {
-      System.out.println(E_WITHDRAW); 
+      System.out.println(E_WITHDRAW);
     }
   }
 
